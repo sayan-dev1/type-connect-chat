@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 263 67% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 222 47% 14%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 222 47% 18%;
+    --muted-foreground: 215 20% 55%;
+
+    --accent: 156 75% 47%;
+    --accent-foreground: 222 47% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 222 47% 16%;
+    --input: 222 47% 16%;
+    --ring: 263 67% 60%;
+
+    --radius: 0.75rem;
+
+    /* MBTI Group Colors */
+    --mbti-analyst: 263 67% 60%;
+    --mbti-diplomat: 156 75% 47%;
+    --mbti-sentinel: 197 80% 63%;
+    --mbti-explorer: 47 90% 60%;
+
+    /* Glass effect */
+    --glass-bg: 222 47% 11% / 0.7;
+    --glass-border: 222 47% 20% / 0.5;
+
+    /* Gradients */
+    --gradient-analyst: linear-gradient(135deg, hsl(263 67% 60%) 0%, hsl(280 70% 50%) 100%);
+    --gradient-diplomat: linear-gradient(135deg, hsl(156 75% 47%) 0%, hsl(170 80% 40%) 100%);
+    --gradient-sentinel: linear-gradient(135deg, hsl(197 80% 63%) 0%, hsl(210 85% 55%) 100%);
+    --gradient-explorer: linear-gradient(135deg, hsl(47 90% 60%) 0%, hsl(35 95% 55%) 100%);
+
+    /* Shadows */
+    --shadow-glow-analyst: 0 0 40px hsl(263 67% 60% / 0.3);
+    --shadow-glow-diplomat: 0 0 40px hsl(156 75% 47% / 0.3);
+    --shadow-glow-sentinel: 0 0 40px hsl(197 80% 63% / 0.3);
+    --shadow-glow-explorer: 0 0 40px hsl(47 90% 60% / 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/70 backdrop-blur-xl border border-border/50 rounded-xl;
+  }
+
+  .glass-card-hover {
+    @apply glass-card transition-all duration-300 hover:bg-card/90 hover:border-border;
+  }
+
+  .mbti-analyst {
+    --mbti-color: var(--mbti-analyst);
+  }
+
+  .mbti-diplomat {
+    --mbti-color: var(--mbti-diplomat);
+  }
+
+  .mbti-sentinel {
+    --mbti-color: var(--mbti-sentinel);
+  }
+
+  .mbti-explorer {
+    --mbti-color: var(--mbti-explorer);
+  }
+
+  .glow-analyst {
+    box-shadow: var(--shadow-glow-analyst);
+    border-color: hsl(var(--mbti-analyst) / 0.5);
+  }
+
+  .glow-diplomat {
+    box-shadow: var(--shadow-glow-diplomat);
+    border-color: hsl(var(--mbti-diplomat) / 0.5);
+  }
+
+  .glow-sentinel {
+    box-shadow: var(--shadow-glow-sentinel);
+    border-color: hsl(var(--mbti-sentinel) / 0.5);
+  }
+
+  .glow-explorer {
+    box-shadow: var(--shadow-glow-explorer);
+    border-color: hsl(var(--mbti-explorer) / 0.5);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  }
+}
+
+@layer utilities {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, hsl(var(--muted-foreground) / 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
