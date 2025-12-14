@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiMenu, FiArrowLeft, FiUsers } from 'react-icons/fi';
+import { FiMenu, FiArrowLeft, FiUsers, FiLoader } from 'react-icons/fi';
 import { getMBTIByCode, groupBgClasses, groupTextClasses } from '@/lib/mbtiData';
 import { useUser } from '@/contexts/UserContext';
 import ChatMessage, { Message } from '@/components/ChatMessage';
@@ -9,28 +9,7 @@ import ChatInput from '@/components/ChatInput';
 import Sidebar from '@/components/Sidebar';
 import MBTIBadge from '@/components/MBTIBadge';
 import { cn } from '@/lib/utils';
-
-// Mock messages for demo (replace with Firestore in production)
-const generateMockMessages = (roomType: string): Message[] => {
-  const names = ['Alex', 'Jordan', 'Sam', 'Taylor', 'Riley', 'Morgan'];
-  const messages = [
-    'Hey everyone! Just joined the room.',
-    'Anyone here interested in discussing cognitive functions?',
-    'I love how this type thinks!',
-    'What books are you all reading lately?',
-    'The weather is great today!',
-    'Has anyone tried the new productivity app?',
-  ];
-
-  return messages.slice(0, 4).map((text, index) => ({
-    id: `msg_${index}`,
-    text,
-    senderName: names[index % names.length],
-    senderType: roomType,
-    createdAt: new Date(Date.now() - (4 - index) * 60000),
-    uid: `user_${index}`,
-  }));
-};
+import { sendMessage, subscribeToMessages, FirebaseMessage } from '@/lib/firebase';
 
 const ChatRoom = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -38,6 +17,8 @@ const ChatRoom = () => {
   const { user, isAuthenticated } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const roomType = roomId?.toUpperCase() || 'INTJ';
@@ -50,36 +31,44 @@ const ChatRoom = () => {
       return;
     }
 
-    // Load mock messages (replace with Firestore onSnapshot)
-    setMessages(generateMockMessages(roomType));
+    // Subscribe to real-time messages from Firebase
+    const unsubscribe = subscribeToMessages(roomType, (firebaseMessages: FirebaseMessage[]) => {
+      const formattedMessages: Message[] = firebaseMessages.map(msg => ({
+        id: msg.id,
+        text: msg.text,
+        senderName: msg.senderName,
+        senderType: msg.senderType,
+        createdAt: msg.createdAt,
+        uid: msg.uid
+      }));
+      setMessages(formattedMessages);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [isAuthenticated, navigate, roomType]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSendMessage = (text: string) => {
-    if (!user) return;
+  const handleSendMessage = async (text: string) => {
+    if (!user || sending) return;
 
-    const newMessage: Message = {
-      id: `msg_${Date.now()}`,
-      text,
-      senderName: user.username,
-      senderType: user.mbtiType,
-      createdAt: new Date(),
-      uid: user.uid,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-
-    // TODO: Add to Firestore
-    // await addDoc(collection(db, 'rooms', roomType, 'messages'), {
-    //   text,
-    //   senderName: user.username,
-    //   senderType: user.mbtiType,
-    //   createdAt: serverTimestamp(),
-    //   uid: user.uid,
-    // });
+    setSending(true);
+    try {
+      await sendMessage(
+        roomType,
+        text,
+        user.username,
+        user.mbtiType,
+        user.uid
+      );
+    } catch (error) {
+      console.error('Failed to send message:', error);
+    } finally {
+      setSending(false);
+    }
   };
 
   if (!user) return null;
@@ -150,14 +139,19 @@ const ChatRoom = () => {
             {/* Online users */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FiUsers className="w-4 h-4" />
-              <span>{Math.floor(Math.random() * 10) + 5} online</span>
+              <span>Live Chat</span>
             </div>
           </div>
         </motion.header>
 
         {/* Messages area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <FiLoader className="w-8 h-8 animate-spin text-muted-foreground" />
+              <p className="text-muted-foreground mt-2">Loading messages...</p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className={cn(
                 'w-16 h-16 rounded-2xl mb-4 flex items-center justify-center',
@@ -186,7 +180,7 @@ const ChatRoom = () => {
         </div>
 
         {/* Input area */}
-        <ChatInput onSend={handleSendMessage} roomType={roomType} />
+        <ChatInput onSend={handleSendMessage} roomType={roomType} disabled={sending} />
       </div>
     </div>
   );
