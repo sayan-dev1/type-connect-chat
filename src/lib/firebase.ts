@@ -15,12 +15,12 @@ import {
 // ⚠️ REPLACE THESE WITH YOUR FIREBASE CONFIG FROM FIREBASE CONSOLE
 // Go to: Firebase Console → Project Settings → Your apps → Web app → Config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAVpOntQBJHWHwoJ0BjVQeffF8paYNK_fk",
+  authDomain: "typetalk-f981b.firebaseapp.com",
+  projectId: "typetalk-f981b",
+  storageBucket: "typetalk-f981b.firebasestorage.app",
+  messagingSenderId: "102827408108",
+  appId: "1:102827408108:web:7ec6c20ed51f30e9a603c9"
 };
 
 const app = initializeApp(firebaseConfig);
